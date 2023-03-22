@@ -1,0 +1,123 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>ong</title>
+	</head>
+	<body>
+	<canvas id="yey"></canvas>
+	<input type="range" id="rran" value=30>
+	<input type="button" value="start" onclick="s=0;start();">
+	<input type="range" id="rwid" value=700>
+	<input type="range" id="voll" value=100>
+	<audio id="audio"></audio>
+	<script type="text/javascript">	
+var canvas=document.getElementById("yey");
+var ctx=canvas.getContext("2d");
+var yoko=40;
+var re=document.getElementById("rran");
+var rw=document.getElementById("rwid");
+var rv=document.getElementById("voll");
+canvas.width=700;
+
+const han=Math.pow(2,(1/12));
+var audctx;
+var omp;
+var osc=[];
+var bag=[];
+var bag2=[];
+var ha=[];
+var on=[];
+var oto=[];
+ots=40;
+var ken=[0,1,0,1,0,0,1,0,1,0,1,0];
+
+var s=0;
+var p=0;
+
+for(i=0;i<ots;i++){
+	bag.push(0);bag2.push(0);ha.push(0);on.push(0);
+	oto.push(220*Math.pow(han,i-9));
+}
+function wari(x,y){
+	if(y<yoko/3*5){
+		if(Math.floor((x-(yoko/2))/yoko)%7!=2 && Math.floor((x-(yoko/2))/yoko)%7!=6){
+			ha[Math.floor((x-(yoko/2))/yoko)%ots]=1;
+		};
+		return;
+	};
+	on[Math.floor(x/yoko)%ots]=1;
+}
+function start(e){
+	if(s){return};
+	s=1;
+	osc=[];
+	audctx= new AudioContext(); 
+	for(i=0;i<ots;i++){
+		var oscnode= audctx.createOscillator(audctx);
+		osc.push(oscnode);
+	}
+	amp= new GainNode(audctx);
+	amp.connect(audctx.destination);
+	amp.gain.value=Math.pow(100,rv.value/100)/100;
+	yoko=re.value;
+	canvas.width=rw.value*21;
+	
+	canvas.height=Math.floor(yoko/3*10)+1;
+	ctx.fillStyle="#000000";
+	ctx.fillRect(0,0,canvas.width,Math.floor(yoko*10/3)+1);
+	ctx.fillStyle="#ffffff";
+	for(i=0;i<canvas.width/yoko;i++) ctx.fillRect(i*yoko,0,yoko-1,Math.floor(yoko/3*10));
+	ctx.fillStyle="#000000";
+	for(i=0;i<canvas.width/yoko;i++){
+		if(i%7!=2 && i%7!=6){ctx.fillRect(i*yoko+Math.floor(yoko*2/3),0,Math.floor(yoko/3*2),Math.floor(yoko/3*5));};
+	}
+}
+function touch(e){
+	cc=e.touches;
+	if(p){
+		e.preventDefault();
+		//passive=0;
+	};
+	p=1;
+	for(i=0;i<ots;i++){bag2[i]=0;ha[i]=0;on[i]=0;};
+	for(i=0;i<cc["length"];i++){
+		wari(cc[i].clientX,cc[i].clientY);
+		if(cc[i].clientY>yoko/3*10){p=0;};
+	}
+	for(i=0,h=0,o=0;i<ots;i++){
+		if(ken[i%12]){bag2[i]=ha[h];h++;if(h%7==2 || h%7==6){h++;};}
+		else{bag2[i]=on[o];o++;};
+	}
+	for(i=0;i<ots;i++){
+		if(bag[i]!=bag2[i]){
+			if(bag2[i]==0){
+				osc[i].stop();
+				}
+			else{
+				var oscnode= audctx.createOscillator(audctx);
+				oscnode.frequency.value=oto[i];
+				oscnode.type='sawtooth';
+				//oscnode.connect(audctx.destination);
+				oscnode.connect(amp);
+				osc[i]=oscnode;
+				oscnode.start();
+				};
+		};
+		bag[i]=bag2[i];
+	}
+
+}
+
+function yy(e){
+	amp.gain.value=Math.pow(100,rv.value/100)/100;
+}
+
+document.addEventListener('touchstart',start);
+document.addEventListener('touchstart',touch);
+document.addEventListener('touchmove',touch);
+document.addEventListener('touchend',touch);
+rv.addEventListener('change',vv);
+</script>
+	</body>
+	
+</html>
